@@ -23,22 +23,37 @@ app.get('/toys', async (req, res, next) => {
 
     // A. Create an `allToys` variable that returns all toys
     // Your code here
+    const allToys = await Toy.findAll();
 
     // B. Create a `toysCount` variable that returns the total number of toy
     // records
     // Your code here
+    // const toysCount = await Toy.count();
+    const toysCount = await Toy.findAll({
+        attributes: [
+            [sequelize.fn('COUNT', sequelize.col('id')),  'numberOfToys']
+        ]
+    });
     
     // C. Create a `toysMinPrice` variable that returns the minimum price of all
     // the toys
     // Your code here
+    const toysMinPrice = await Toy.min('price');
     
     // D. Create a `toysMaxPrice` variable that returns the maximum price of all
     // the toys
     // Your code here
+    // const toysMaxPrice = await Toy.max('price');
+    const toysMaxPrice = await Toy.findAll({
+        attributes: [
+                [sequelize.fn('MAX', sequelize.col('price')),  'maxPriceOfToys']
+            ]
+    });
 
     // E. Create a `toysSumPrice` variable that returns the sum of all of
     // the toy prices.
     // Your code here
+    const toysSumPrice = await Toy.sum('price');
 
     res.json({
         toysCount,
@@ -112,5 +127,5 @@ app.get('/', (req, res) => {
 });
 
 // Set port and listen for incoming requests - DO NOT MODIFY
-const port = 5000;
+const port = 5001;
 app.listen(port, () => console.log('Server is listening on port', port));
