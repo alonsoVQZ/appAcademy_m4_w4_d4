@@ -18,18 +18,18 @@ app.get('/musicians', async (req, res, next) => {
     // offset and limit values if necessary.
     // Your code here
     let { page, size } = req.query;
-    if(!page) {
+    if (!page) {
         page = 1;
     }
-    if(!size) {
+    if (!size) {
         size = 5;
     }
     // Query for all musicians
     // Include attributes for `id`, `firstName`, and `lastName`
     // Include associated bands and their `id` and `name`
     // Order by musician `lastName` then `firstName`
-    const musicians = await Musician.findAll({ 
-        order: [['lastName'], ['firstName']], 
+    const musicians = await Musician.findAll({
+        order: [['lastName'], ['firstName']],
         attributes: ['id', 'firstName', 'lastName'],
         include: [{
             model: Band,
@@ -51,20 +51,23 @@ app.get('/bands', async (req, res, next) => {
     // Parse the query params, set default values, and create appropriate
     // offset and limit values if necessary.
     // Your code here
-    
+    console.log(req.query)
+    const { page, size } = req.query;
+    page ? page : 1
+    size ? size : 5
     // Query for all bands
     // Include attributes for `id` and `name`
     // Include associated musicians and their `id`, `firstName`, and `lastName`
     // Order by band `name` then musician `lastName`
-    const bands = await Band.findAll({ 
-        order: [['name'], [Musician, 'lastName']], 
+    const bands = await Band.findAll({
+        order: [['name'], [Musician, 'lastName']],
         attributes: ['id', 'name'],
         include: [{
             model: Musician,
             attributes: ['id', 'firstName', 'lastName']
         }],
-        // add limit key-value to query
-        // add offset key-value to query
+        limit: size,
+        offset: (page - 1) * size
         // Your code here
     });
 
@@ -77,15 +80,15 @@ app.get('/instruments', async (req, res, next) => {
     // Parse the query params, set default values, and create appropriate
     // offset and limit values if necessary.
     // Your code here
-    
+
     // Query for all instruments
     // Include attributes for `id` and `type`
     // Include associated musicians and their `id`, `firstName` and `lastName`
     // Omit the MusicianInstruments join table attributes from the results
     // Include each musician's associated band and their `id` and `name`
     // Order by instrument `type`, then band `name`, then musician `lastName`
-    const instruments = await Instrument.findAll({ 
-        order: [['type'], [Musician, Band, 'name'], [Musician, 'lastName']], 
+    const instruments = await Instrument.findAll({
+        order: [['type'], [Musician, Band, 'name'], [Musician, 'lastName']],
         attributes: ['id', 'type'],
         include: [{
             model: Musician,
