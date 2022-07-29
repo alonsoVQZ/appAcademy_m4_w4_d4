@@ -28,26 +28,28 @@ app.get('/toys', async (req, res, next) => {
     // B. Create a `toysCount` variable that returns the total number of toy
     // records
     // Your code here
-    // const toysCount = await Toy.count();
+    // const toysCount = await Toy.count(); // more efficient
     const toysCount = await Toy.findAll({
         attributes: [
-            [sequelize.fn('COUNT', sequelize.col('id')),  'numberOfToys']
+            [sequelize.fn('COUNT', sequelize.col('id')), 'numberOfToys']
         ]
     });
-    
+
     // C. Create a `toysMinPrice` variable that returns the minimum price of all
     // the toys
     // Your code here
     const toysMinPrice = await Toy.min('price');
-    
+
     // D. Create a `toysMaxPrice` variable that returns the maximum price of all
     // the toys
     // Your code here
     // const toysMaxPrice = await Toy.max('price');
     const toysMaxPrice = await Toy.findAll({
-        attributes: [
-                [sequelize.fn('MAX', sequelize.col('price')),  'maxPriceOfToys']
+        attributes: {
+            include: [
+                [sequelize.fn('MAX', sequelize.col('price')), 'maxPriceOfToys']
             ]
+        }
     });
 
     // E. Create a `toysSumPrice` variable that returns the sum of all of
@@ -78,15 +80,15 @@ app.get('/cats/:id/toys', async (req, res, next) => {
         attributes: [
             // Count all of this cat's toys, and display the value with a
             // key of `toyCount`
-            // Your code here
+            [sequelize.fn('COUNT', sequelize.col(`Toys.id`)), 'toyCount'],
 
             // Find the average price of this cat's toys, and display the
             // value with a key of `averageToyPrice`
-            // Your code here
+            [sequelize.fn('AVG', sequelize.col(`Toys.price`)), 'averageToyPrice'],
 
             // Find the total price of this cat's toys, and display the
             // value with a key of `totalToyPrice`
-            // Your code here
+            [sequelize.fn('SUM', sequelize.col(`Toys.price`)), 'totalToyPrice']
         ],
         raw: true
     });
@@ -94,21 +96,22 @@ app.get('/cats/:id/toys', async (req, res, next) => {
     const cat = await Cat.findByPk(req.params.id, {
         include: { model: Toy }
     });
-    
+
 
     // STEP 2b: Format the cat object to add the aggregate keys and values to it
 
-    // Define a new variable, `catData`, and set it equal to the `cat` variable converted to JSON 
+    // Define a new variable, `catData`, and set it equal to the `cat` variable converted to JSON
     // Your code here
-
+    const catData = cat.toJSON();
     // Add the `toyCount`, `averageToyPrice`, and `totalToyPrice` keys to the
     // catData object, with their aggregate values from `catToysAggregateData`
-    // Your code here
-
+    catData.toyCount = catToysAggregateData.toyCount;
+    catData.averageToyPrice = catToysAggregateData.averageToyPrice;
+    catData.totalToyPrice = catToysAggregateData.totalToyPrice;
 
     // After the steps above are complete, refactor the line below to only
     // display `catData`
-    res.json({ catToysAggregateData, cat });
+    res.json(catData);
 })
 
 
